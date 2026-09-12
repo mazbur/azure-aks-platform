@@ -1,78 +1,57 @@
 apiVersion: apps/v1
 kind: Deployment
-metadata:
-  name: {{ include "appHelmChart.fullname" . }}
+metadata: 
+  name: {{ .Values.deployment.name }}
   labels:
-    {{- include "appHelmChart.labels" . | nindent 4 }}
+  {{- toYaml .Values.deployment.labels | nindent 4 }}
 spec:
-  {{- if not .Values.autoscaling.enabled }}
-  replicas: {{ .Values.replicaCount }}
-  {{- end }}
   selector:
-    matchLabels:
-      {{- include "appHelmChart.selectorLabels" . | nindent 6 }}
+    matchLabels: 
+    {{- toYaml .Values.deploymentd.pod.labels | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
-      annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
       labels:
-        {{- include "appHelmChart.labels" . | nindent 8 }}
-        {{- with .Values.podLabels }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
-    spec:
-      {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
+      {{- with .Values.deployment.pod.labels }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "appHelmChart.serviceAccountName" . }}
-      {{- with .Values.podSecurityContext }}
-      securityContext:
-        {{- toYaml . | nindent 8 }}
+      {{- if .Values.deployment.podAnnotations }}
+      annotations:
+        {{- with .Values.deployment.podannotations }}
+          {{- toYaml . | nindent 8 }}
+        {{- end}}
+      {{- end }}
+    spec:
+      {{- if .Values.deployment.serviceAccountEnabled }}
+      serviceAccountName: {{ .Values.deployment.serviceAccountName }} 
+      {{- end }}        
+      {{- with .Values.deployment.podSecurityContext }}
+      securityContext: {{- toYaml . | nindent 8 }}
       {{- end }}
       containers:
-        - name: {{ .Chart.Name }}
-          {{- with .Values.securityContext }}
+        - name: {{ .Values.deployment.containerName }}
+          {{- with .Values.deployment.containerSecurityContext }}
           securityContext:
-            {{- toYaml . | nindent 12 }}
+            {{- toYaml . | nindent 10 }}
           {{- end }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: {{ .Values.deployment.containerImage }} 
+          {{- with .Values.deployment.containerPorts }}
           ports:
-            - name: http
-              containerPort: {{ .Values.service.port }}
-              protocol: TCP
-          {{- with .Values.livenessProbe }}
-          livenessProbe:
-            {{- toYaml . | nindent 12 }}
+            {{- toYaml . | nindent 10 }}
           {{- end }}
-          {{- with .Values.readinessProbe }}
+          {{- with .Values.deployment.containerReadinessProbe }}
           readinessProbe:
-            {{- toYaml . | nindent 12 }}
+            {{- toYaml . | nindent 10 }}
+          {{- end}}
+          {{- with .Values.deployment.containerLivenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 10 }}
           {{- end }}
-          {{- with .Values.resources }}
+          env:
+          {{- range .Values.deployment.container.envVariables }}
+          - name: {{ .name }}
+            value: {{ .value }}
+          {{- end }}
+          {{- with .Values.deployment.containerResources }}
           resources:
-            {{- toYaml . | nindent 12 }}
+            {{- toYaml . | nindent 10 }}
           {{- end }}
-          {{- with .Values.volumeMounts }}
-          volumeMounts:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
-      {{- with .Values.volumes }}
-      volumes:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
