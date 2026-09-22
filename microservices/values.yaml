@@ -1,0 +1,44 @@
+# Default values for the microservices chart.
+# These are fallback defaults only — every service overrides what it needs
+# via its own file under microservices/values/.
+
+serviceAccount:
+  # Set false if the ServiceAccount already exists in the cluster
+  create: true
+  # Defaults to .Values.deployment.name via _helpers.tpl when left empty
+  name: ""
+  # Annotations added to the SA — useful for Workload Identity binding
+  annotations: {}
+
+deployment:
+  name: ""
+  # containerName defaults to deployment.name via _helpers.tpl when left empty
+  containerName: ""
+  containerImage: ""
+  imagePullPolicy: IfNotPresent
+
+  serviceAccountEnabled: false
+  serviceAccountName: ""
+
+  podTerminationGracePeriod: 5
+  podAnnotations: {}
+  podSecurityContext: {}
+
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    privileged: false
+    readOnlyRootFilesystem: true
+
+  containerPorts: []
+  containerReadinessProbe: {}
+  containerLivenessProbe: {}
+  envVariables: []
+  containerResources: {}
+
+service:
+  enabled: true
+  type: ClusterIP
+  ports: []

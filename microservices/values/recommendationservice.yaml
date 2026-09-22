@@ -1,0 +1,41 @@
+deployment:
+  name: recommendationservice
+  containerImage: us-central1-docker.pkg.dev/google-samples/microservices-demo/recommendationservice:v0.10.1
+
+  containerPorts:
+    - containerPort: 8080
+      protocol: TCP
+
+  containerReadinessProbe:
+    exec:
+      command: ["/bin/grpc_health_probe", "-addr=:8080"]
+
+  containerLivenessProbe:
+    exec:
+      command: ["/bin/grpc_health_probe", "-addr=:8080"]
+
+  envVariables:
+    - name: PORT
+      value: "8080"
+    - name: PRODUCT_CATALOG_SERVICE_ADDR
+      value: "productcatalogservice:3550"
+    - name: DISABLE_PROFILER
+      value: "1"
+
+  # Higher memory — Python gRPC server with product list in memory
+  containerResources:
+    requests:
+      cpu: 100m
+      memory: 220Mi
+    limits:
+      cpu: 200m
+      memory: 450Mi
+
+service:
+  enabled: true
+  type: ClusterIP
+  ports:
+    - name: grpc
+      port: 8080
+      targetPort: 8080
+      protocol: TCP

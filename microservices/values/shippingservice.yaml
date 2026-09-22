@@ -1,0 +1,36 @@
+deployment:
+  name: shippingservice
+  containerImage: us-central1-docker.pkg.dev/google-samples/microservices-demo/shippingservice:v0.10.1
+
+  containerPorts:
+    - containerPort: 50051
+      protocol: TCP
+
+  containerReadinessProbe:
+    exec:
+      command: ["/bin/grpc_health_probe", "-addr=:50051"]
+
+  containerLivenessProbe:
+    exec:
+      command: ["/bin/grpc_health_probe", "-addr=:50051"]
+
+  envVariables:
+    - name: PORT
+      value: "50051"
+
+  containerResources:
+    requests:
+      cpu: 100m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+service:
+  enabled: true
+  type: ClusterIP
+  ports:
+    - name: grpc
+      port: 50051
+      targetPort: 50051
+      protocol: TCP

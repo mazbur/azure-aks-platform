@@ -1,0 +1,7 @@
+---
+
+trigger:
+  include:
+    - branch: main
+  path:
+    - **/appHelmChart/templates/**

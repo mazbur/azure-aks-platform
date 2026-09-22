@@ -1,0 +1,26 @@
+deployment:
+  name: loadgenerator
+  containerImage: us-central1-docker.pkg.dev/google-samples/microservices-demo/loadgenerator:v0.10.1
+
+  # No containerPorts — loadgenerator is a client, it exposes no server port
+
+  # No probes — it is a client workload with no health endpoint
+
+  envVariables:
+    - name: FRONTEND_ADDR
+      value: "frontend:80"
+    - name: USERS
+      value: "10"
+
+  containerResources:
+    requests:
+      cpu: 300m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# loadgenerator has no Service — it only makes outbound requests
+service:
+  enabled: false
+  ports: []

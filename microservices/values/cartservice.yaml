@@ -1,0 +1,41 @@
+deployment:
+  name: cartservice
+  containerImage: us-central1-docker.pkg.dev/google-samples/microservices-demo/cartservice:v0.10.1
+
+  containerPorts:
+    - containerPort: 7070
+      protocol: TCP
+
+  containerReadinessProbe:
+    initialDelaySeconds: 15
+    exec:
+      command: ["/bin/grpc_health_probe", "-addr=:7070", "-rpc-timeout=5s"]
+
+  containerLivenessProbe:
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    exec:
+      command: ["/bin/grpc_health_probe", "-addr=:7070", "-rpc-timeout=5s"]
+
+  envVariables:
+    - name: PORT
+      value: "7070"
+    - name: REDIS_ADDR
+      value: "redis-cart:6379"
+
+  containerResources:
+    requests:
+      cpu: 200m
+      memory: 64Mi
+    limits:
+      cpu: 300m
+      memory: 128Mi
+
+service:
+  enabled: true
+  type: ClusterIP
+  ports:
+    - name: grpc
+      port: 7070
+      targetPort: 7070
+      protocol: TCP

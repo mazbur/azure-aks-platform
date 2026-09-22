@@ -1,0 +1,42 @@
+deployment:
+  name: adservice
+  containerImage: us-central1-docker.pkg.dev/google-samples/microservices-demo/adservice:v0.10.1
+
+  containerPorts:
+    - containerPort: 9555
+      protocol: TCP
+
+  containerReadinessProbe:
+    initialDelaySeconds: 20
+    exec:
+      command: ["/bin/grpc_health_probe", "-addr=:9555"]
+
+  containerLivenessProbe:
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    exec:
+      command: ["/bin/grpc_health_probe", "-addr=:9555"]
+
+  envVariables:
+    - name: PORT
+      value: "9555"
+    - name: DISABLE_PROFILER
+      value: "1"
+
+  # Higher resources — Java service with JVM overhead
+  containerResources:
+    requests:
+      cpu: 200m
+      memory: 180Mi
+    limits:
+      cpu: 300m
+      memory: 300Mi
+
+service:
+  enabled: true
+  type: ClusterIP
+  ports:
+    - name: grpc
+      port: 9555
+      targetPort: 9555
+      protocol: TCP
